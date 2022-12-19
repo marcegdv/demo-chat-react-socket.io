@@ -1,0 +1,1 @@
+export const clog = (text) => console.log(`${Date.now()} ${text}`)
