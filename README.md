@@ -21,4 +21,4 @@ Los canales guardan el chat, pero los chats entre clientes se pierden por motivo
 
 - El objetivo de este repo fué aprender conceptos sobre la librería Socket.IO y como implementarlo con React.
 
-Nota: Tanto el cliente como el servidor, no son códigos definitivos, sobre todo el cliente qye será utilizado para un próximo objetivo personal para aprende otros hooks de React para limpiar el código y para poder hacerlo mas reutilizable.
+Nota: Tanto el cliente como el servidor, no son códigos definitivos, sobre todo el cliente que será utilizado para un próximo objetivo personal para aprende otros hooks de React, limpiar el código y para poder hacerlo mas reutilizable.
