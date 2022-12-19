@@ -23,7 +23,7 @@ const io = new Server(httpServer, {
     pingTimeout: Number(PING_TIME_OUT),
     // para poder acceder desde la app hecha en react
     cors: {
-        origin: "http://localhost:8080",
+        origin: ["http://localhost:8080","http://localhost:3000"],
     },
 });
 
