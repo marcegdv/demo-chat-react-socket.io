@@ -1,6 +1,6 @@
-import * as userEmit from '../emissions/user.js';
-import { clog } from '../utils/logger.js';
-import { validateUserName } from '../utils/user.js';
+import * as userEmit from '../../emissions/user.js';
+import { clog } from '../../utils/logger.js';
+import { validateUserName } from '../../utils/user.js';
 
 export const USER_EVENT = {
     setName: 'set name',
@@ -36,17 +36,17 @@ export const setName = (io, socket, name) => {
 };
 
 export const singleRename = async (io, socket, oldName, newName, userNameTarget) => {
-    if (
+    const isValidName =
         validateUserName(oldName) &&
         validateUserName(newName) &&
-        validateUserName(userNameTarget)
-    ) {
+        validateUserName(userNameTarget);
+    if (isValidName) {
         const list = await io.fetchSockets();
         const socketTarget = Array.from(list).find(skt => skt?.data?.user?.name === userNameTarget);
         if (!!socketTarget) {
             userEmit.singleRename(io, socket, oldName, newName, socketTarget);
         } else {
-            userEmir.singleRenameError();
+            userEmit.singleRenameError();
         };
     };
 };

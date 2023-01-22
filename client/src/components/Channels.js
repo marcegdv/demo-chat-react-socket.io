@@ -45,7 +45,7 @@ const ChannelsArea = (props) => {
                     name={name}
                     setName={handleCreateNewChat}
                     label='Nuevo chat:'
-                    placeholder='Ingresa el nombre del canal...'
+                    placeholder='Nombre del canal o usuario...'
                     buttonLabel='Crear'
                     highlight={false}
                     validateCharacters='channel'

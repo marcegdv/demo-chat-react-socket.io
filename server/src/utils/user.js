@@ -3,7 +3,6 @@ export const validateUser = (user) => {
         validateUserKeys(user) &&
         validateUserId(user.id) &&
         validateUserName(user.name);
-
     return response;
 };
 

@@ -1,5 +1,5 @@
-import * as channelEmit from '../emissions/channel.js';
-import * as channelRepo from '../repositories/channel.js';
+import * as channelEmit from '../../emissions/channel.js';
+import * as channelRepo from '../../repositories/channel.js';
 
 export const CHANNEL_EVENT = {
     list: 'channel list',
