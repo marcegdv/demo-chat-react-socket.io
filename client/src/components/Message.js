@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 
-import AppContext from '../context/AppContext';
+import { AppContext } from '../context/AppContext';
 
 const Message = (props) => {
     const { message } = props;
-    const [appState] = useContext(AppContext);
+    const { appState } = useContext(AppContext);
 
     const myId = appState.user.id
 

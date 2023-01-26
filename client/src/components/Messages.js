@@ -1,10 +1,10 @@
 import { useEffect, useRef, useContext } from "react";
 import Message from "./Message";
-import AppContext from "../context/AppContext";
+import { AppContext } from "../context/AppContext";
 import { isChannel } from "../utils/functions";
 
 const Messages = () => {
-    const [appState] = useContext(AppContext);
+    const { appState } = useContext(AppContext);
     const { target, singles } = appState;
 
     const getMessages = () => {

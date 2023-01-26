@@ -6,7 +6,7 @@ export const storage = (isLocal = false) => {
     return {
         setOnline: (online) => ws.setItem('online', online),
         setUser: (user) => ws.setItem('user', JSON.stringify(user)),
-        setMyId: (myName) => ws.setItem('myId', myName),
+        setMyId: (myId) => ws.setItem('myId', myId),
         setMyName: (myName) => ws.setItem('myName', myName),
         setChannels: (channels) => ws.setItem('channels', JSON.stringify(channels)),
         setTarget: (target) => ws.setItem('target', JSON.stringify(target)),

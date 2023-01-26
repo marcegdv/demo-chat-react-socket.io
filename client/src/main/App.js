@@ -6,7 +6,8 @@ import InputMessage from "../components/InputMessage";
 import Messages from "../components/Messages";
 import Name from "../components/Name";
 
-import AppContext from "../context/AppContext";
+import { AppContext } from "../context/AppContext";
+import { reducerActionMap } from "../context/AppReducer";
 
 import { EMISSIONS } from "../socket.io/emissions";
 import { EVENTS } from "../socket.io/events";
@@ -23,7 +24,7 @@ const App = (props) => {
         topBar: '',
         children: null,
     });
-    const [appState, setAppState] = useContext(AppContext);
+    const { appState, dispatch } = useContext(AppContext);
     const [message, setMessage] = useState('');
 
     session.set(appState);
@@ -58,15 +59,15 @@ const App = (props) => {
     // Donde se procesan todos los eventos/mensajes que envía el servidor
     const socketEvents = (socket, events, emissions) => {
         socket.on(events.connect, () => {
-            setAppState(p => ({ ...p, online: true }));
+            dispatch({ type: reducerActionMap.setOnline, payload: true });
             socket.emit(emissions.channelList);
         });
         socket.on(events.disconnect, () => {
-            setAppState(p => ({ ...p, online: false }));
+            dispatch({ type: reducerActionMap.setOnline, payload: false });
         });
 
         socket.on(events.userId, (user) => {
-            setAppState(p => ({ ...p, user }));
+            dispatch({ type: reducerActionMap.setUser, payload: user });
         });
 
         socket.on(events.channelList, (list) => {
@@ -75,7 +76,7 @@ const App = (props) => {
             Object.keys(singles).forEach(key => {
                 channels[singles[key].name] = singles[key];
             });
-            setAppState(p => ({ ...p, channels: { ...channels } }));
+            dispatch({ type: reducerActionMap.setChannels, payload: channels });
         });
 
         //eventos de usuario
@@ -87,18 +88,15 @@ const App = (props) => {
                 delete channels[name];
                 const target = session.getTarget();
                 const retarget = target.id === id ? { id: '', name: '' } : target;
-                setAppState(p => ({
-                    ...p,
-                    target: retarget,
-                    channels: { ...channels },
-                    singles: { ...singles },
-                }));
+                dispatch({ type: reducerActionMap.setTarget, payload: retarget });
+                dispatch({ type: reducerActionMap.setChannels, payload: { ...channels } });
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             };
         });
         socket.on(events.nameSaved, (newName, oldName) => {
             const user = session.getUser();
             user.name = newName;
-            setAppState(p => ({ ...p, user }));
+            dispatch({ type: reducerActionMap.setUser, payload: user });
             const singles = session.getSingles();
             const singlesKeys = getSingles(session.getSingles());
             singlesKeys.forEach(id => {
@@ -126,12 +124,9 @@ const App = (props) => {
                 newSingleChat(singles, user);
                 const channels = session.getChannels();
                 channels[user.name] = user;
-                setAppState(p => ({
-                    ...p,
-                    channels: { ...channels },
-                    target: user,
-                    singles: { ...singles },
-                }));
+                dispatch({ type: reducerActionMap.setChannels, payload: { ...channels } });
+                dispatch({ type: reducerActionMap.setTarget, payload: user });
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             };  //fix ? no va
         });
         socket.on(events.openSingleChat, (user) => {
@@ -140,11 +135,8 @@ const App = (props) => {
                 newSingleChat(singles, user);
                 const channels = session.getChannels();
                 channels[user.name] = user;
-                setAppState(p => ({
-                    ...p,
-                    channels: { ...channels },
-                    singles: { ...singles },
-                }));
+                dispatch({ type: reducerActionMap.setChannels, payload: { ...channels } });
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             };
         });
         socket.on(events.messageFromSingle, (message, userSender) => {
@@ -153,14 +145,14 @@ const App = (props) => {
             const name = userSender?.name ?? message.user.name;
             if (!singles[id]) {
                 newSingleChat(singles, { id: id, name: name }, message);
-                setAppState(p => ({
-                    ...p,
-                    channels: [...p.channels, name],
-                    singles: { ...singles },
-                }));
+                dispatch({
+                    type: reducerActionMap.setChannels,
+                    payload: [...appState.channels, name]
+                });
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             } else {
                 singles[id].messages = [...singles[id].messages, message];
-                setAppState(p => ({ ...p, singles: { ...singles } }));
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             };
         });
         socket.on(events.nameChanged, (id, oldName, newName) => {
@@ -184,19 +176,19 @@ const App = (props) => {
                 if (retarget.name === oldName) {
                     retarget.name = newName;
                 };
-                setAppState(p => ({
-                    ...p,
-                    target: retarget,
-                    channels: { ...channels },
-                    singles: { ...singles },
-                }));
+                dispatch({ type: reducerActionMap.setTarget, payload: retarget });
+                dispatch({ type: reducerActionMap.setChannels, payload: { ...channels } });
+                dispatch({ type: reducerActionMap.setSingles, payload: { ...singles } });
             };
         })
 
         //eventos de canales
         socket.on(events.channelJoined, (channelName, userName) => {
             if (session.getMyName() === userName) {
-                setAppState(p => ({ ...p, target: { id: '', name: channelName } }));
+                dispatch({
+                    type: reducerActionMap.setTarget,
+                    payload: { id: '', name: channelName }
+                });
             };
         });
         socket.on(events.notJoined, (channel) => {
@@ -207,24 +199,27 @@ const App = (props) => {
             })
         })
         socket.on(events.channelHistory, (history) => {
-            setAppState(p => ({ ...p, messages: [...history] }));
+            dispatch({ type: reducerActionMap.setMessages, payload: [...history] });
         });
         socket.on(events.messageFromChannel, (channelName, newMessage) => {
             const messages = session.getMessages();
-            setAppState(p => ({ ...p, messages: [...messages, newMessage] }));
+            dispatch({
+                type: reducerActionMap.setMessages,
+                payload: [...messages, newMessage]
+            });
         });
         socket.on(events.leaveChannel, (channelName, userName) => {
             if (appState.user.name === userName) {
-                setAppState(p => ({ ...p, target: { id: '', name: '' } }));
+                dispatch({
+                    type: reducerActionMap.setTarget,
+                    payload: { id: '', name: '' }
+                })
             };
         });
         socket.on(events.channelCreated, (channelName, channelData) => {
             const channels = session.getChannels();
             channels[channelName] = channelData;
-            setAppState(p => ({
-                ...p,
-                channels: { ...channels },
-            }))
+            dispatch({ type: reducerActionMap.setChannels, payload: { ...channels } });
             handleOnClickChat(channelName);
         });
         socket.on(events.invalidChannelName, (channelName) => {
@@ -276,7 +271,7 @@ const App = (props) => {
                         id: singlesIds[index],
                         name: singlesData[index].name,
                     };
-                    setAppState(p => ({ ...p, target: newTarget }));
+                    dispatch({ type: reducerActionMap.setTarget, payload: newTarget });
                 };
             };
         };
